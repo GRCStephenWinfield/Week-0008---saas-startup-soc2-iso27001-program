@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CloudNimbus — SOC 2 Type II and ISO/IEC 27001:2022 Programme Dashboard</title>
+<style>
+:root{
+  --bg:#f2f6f7; --panel:#ffffff; --ink:#12212a; --muted:#5a6d78; --line:#dbe4e8;
+  --navy:#12414b; --teal:#0e7c8a; --green:#1a7f4b; --amber:#a96a06; --red:#b3261e;
+  --greenbg:#e6f5ec; --amberbg:#fdf3de; --redbg:#fdeceb; --bluebg:#e6f1f3;
+  --shadow:0 1px 2px rgba(12,40,50,.06),0 8px 24px rgba(12,40,50,.07);
+}
+html[data-theme="dark"]{
+  --bg:#0c151a; --panel:#132029; --ink:#e4eef2; --muted:#93a8b3; --line:#243642;
+  --navy:#6fc4d2; --teal:#43c9d6; --green:#4ade80; --amber:#fbbf24; --red:#f87171;
+  --greenbg:#0f2e1e; --amberbg:#33270a; --redbg:#3a1414; --bluebg:#123039;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 20px 80px}
+header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:8px}
+h1{font-size:clamp(20px,2.6vw,30px);margin:0 0 4px;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:14px;margin:0}
+.badgerow{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 26px}
+.badge{font-size:12px;font-weight:650;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+.b-green{background:var(--greenbg);color:var(--green);border-color:transparent}
+.b-amber{background:var(--amberbg);color:var(--amber);border-color:transparent}
+.b-red{background:var(--redbg);color:var(--red);border-color:transparent}
+.b-navy{background:var(--bluebg);color:var(--navy);border-color:transparent}
+button.toggle{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;
+  padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+button.toggle:hover{border-color:var(--teal)}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:980px){.g4{grid-template-columns:repeat(2,1fr)}.g3,.g2{grid-template-columns:1fr}}
+@media(max-width:560px){.g4{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+.kpi .n{font-size:30px;font-weight:750;letter-spacing:-.02em;line-height:1.1}
+.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:650;margin-top:6px}
+.kpi .d{font-size:12.5px;color:var(--muted);margin-top:7px}
+.kpi.ok .n{color:var(--green)} .kpi.warn .n{color:var(--amber)} .kpi.bad .n{color:var(--red)} .kpi.info .n{color:var(--teal)}
+h2{font-size:17px;margin:34px 0 12px;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+h2::before{content:"";width:4px;height:17px;background:var(--teal);border-radius:2px;display:inline-block}
+h3{font-size:14px;margin:0 0 12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;background:var(--navy);color:#fff;padding:9px 11px;font-size:11.5px;
+  text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+html[data-theme="dark"] th{color:#0c151a}
+td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:nth-child(even){background:rgba(120,150,165,.07)}
+tbody tr:hover{background:var(--bluebg)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;
+  background:var(--bluebg);padding:1px 5px;border-radius:4px}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.p-g{background:var(--greenbg);color:var(--green)} .p-a{background:var(--amberbg);color:var(--amber)}
+.p-r{background:var(--redbg);color:var(--red)} .p-n{background:var(--bluebg);color:var(--teal)}
+.bar{height:9px;background:var(--line);border-radius:5px;overflow:hidden;margin-top:7px}
+.bar>i{display:block;height:100%;border-radius:5px}
+.callout{border-left:4px solid var(--red);background:var(--redbg);padding:14px 18px;border-radius:0 10px 10px 0;margin:16px 0}
+.callout.good{border-left-color:var(--green);background:var(--greenbg)}
+.callout.note{border-left-color:var(--teal);background:var(--bluebg)}
+.callout p{margin:0;font-size:14px}
+.callout p + p{margin-top:9px}
+.callout strong{font-weight:750}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.lg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.lg span{display:flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:900px){.phases{grid-template-columns:1fr}}
+a.ph{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;padding:14px 16px;transition:.15s;box-shadow:var(--shadow)}
+a.ph:hover{border-color:var(--teal);transform:translateY(-2px)}
+a.ph .num{font-size:11px;font-weight:750;color:var(--teal);letter-spacing:.08em}
+a.ph .ttl{font-weight:680;font-size:14.5px;margin:3px 0 5px}
+a.ph .out{font-size:12.5px;color:var(--muted)}
+footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.small{font-size:12.5px;color:var(--muted);margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1>CloudNimbus, Inc. — SOC 2 Type II and ISO/IEC 27001:2022 Programme</h1>
+    <p class="sub">Executive dashboard · fourteen months, two deliverables, one evidence programme · vantage <strong>2027-03-11</strong> · illustrative portfolio sample, all figures fictional</p>
+  </div>
+  <button class="toggle" id="themeBtn" type="button">🌗 Dark mode</button>
+</header>
+
+<div class="badgerow">
+  <span class="badge b-green">Unmodified opinion · 2027-02-26</span>
+  <span class="badge b-amber">9 test exceptions in Section IV</span>
+  <span class="badge b-green">ISO/IEC 27001:2022 certificate · 2027-01-22</span>
+  <span class="badge b-red">1 major nonconformity — decided, not missed</span>
+  <span class="badge b-red">OBJ-03 missed · 16.9% against 70%</span>
+  <span class="badge b-navy">61 criteria · 93 Annex A controls · 150 library controls</span>
+  <span class="badge b-navy">$1,366,000 of $1,400,000</span>
+</div>
+
+<h2>The headline numbers</h2>
+<div class="grid g4">
+  <div class="card kpi ok"><div class="n">Unmodified</div><div class="l">SOC 2 Type II opinion</div>
+    <div class="d">Across all five trust services categories for 2026-07-01 to 2026-12-31. An examination produces an <strong>opinion</strong>, never a certificate.</div></div>
+  <div class="card kpi warn"><div class="n">9</div><div class="l">Test exceptions disclosed</div>
+    <div class="d">Under nine of the sixty-one applicable criteria. <strong>Every one found by CloudNimbus before the service auditor found it</strong> — stated once and not celebrated, because on one of the nine the finder was an evidence sample being assembled for the examination rather than any control.</div></div>
+  <div class="card kpi bad"><div class="n">1</div><div class="l">Major nonconformity</div>
+    <div class="d">Clause 9.2 and A.5.22 in one failure. Raised 2026-12-02, closed in <strong>44 days</strong>.</div></div>
+  <div class="card kpi ok"><div class="n">2030-01-21</div><div class="l">Certificate valid to</div>
+    <div class="d">Issued 2027-01-22 by an ANAB-accredited certification body. <strong>ISO does not certify anyone.</strong></div></div>
+</div>
+
+<div class="grid g4" style="margin-top:16px">
+  <div class="card kpi bad"><div class="n">16.9%</div><div class="l">OBJ-03 against a 70% target</div>
+    <div class="d">356 evidence artefacts of 2,103. <strong>The objective the whole programme was designed around.</strong></div></div>
+  <div class="card kpi info"><div class="n">75.3%</div><div class="l">The better measure, published not substituted</div>
+    <div class="d">113 of 150 library controls serve both frameworks. Referred to the body that sets objectives, not applied in the chapter that grades them.</div></div>
+  <div class="card kpi warn"><div class="n">0 · 17 · 21</div><div class="l">Register at close, against 0 · 16 · 22</div>
+    <div class="d">38 entries. One at band level; <strong>five entries crossing a band underneath it.</strong></div></div>
+  <div class="card kpi ok"><div class="n">$1,366k</div><div class="l">Committed of a $1,400k envelope</div>
+    <div class="d">4.6 FTE over ~14 months. Internal labour alone exceeds every external fee combined.</div></div>
+</div>
+
+<div class="callout">
+  <p><strong>The programme's worst finding was not something CloudNimbus missed. It was something it decided.</strong> The clause 9.2 gap had been in its own records for eleven months — read, agreed with, <strong>minuted at the highest governance body in the ISMS and deferred twice</strong> — before Northgate raised it as a major nonconformity. It was accepted at the closing meeting without contest.</p>
+  <p><em>An entity that failed to notice a gap has a detection problem. An entity that noticed it, took it to its highest governance body and decided to leave it has a different one — and the second is not the kind that monitoring evidence answers.</em></p>
+</div>
+
+<h2>The nine test exceptions, as published in Section IV</h2>
+<div class="card">
+  <h3>Deviation rate by exception — every rate recomputes from its population</h3>
+  <svg id="chartExc" viewBox="0 0 900 300" role="img" aria-label="Deviation rate by exception"></svg>
+  <div class="lg"><span><i class="sw" style="background:var(--teal)"></i> deviation rate</span>
+    <span><i class="sw" style="background:var(--red)"></i> exception 5 — the near-modification</span></div>
+</div>
+
+<div class="card" style="margin-top:16px">
+<table>
+<thead><tr><th>#</th><th>Criterion</th><th>Control</th><th>Population</th><th>Dev.</th><th>Rate</th><th>The service auditor's evaluation, in short</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><strong>A1.2</strong></td><td><code>CNB-C-098</code></td><td>6 monthly restore tests</td><td>1</td><td><span class="pill p-a">16.7%</span></td><td>Not performed and not re-performed and back-dated; four other controls serve A1.2 across the window</td></tr>
+<tr><td>2</td><td><strong>A1.1, A1.2</strong></td><td><code>CNB-C-096</code></td><td>1 event</td><td>1</td><td><span class="pill p-r">—</span></td><td>A <strong>design</strong> deficiency in the original statement, silent on what the probe must exercise. Amended mid-period</td></tr>
+<tr><td>3</td><td><strong>PI1.3</strong></td><td><code>CNB-C-108</code></td><td>58 reconciliation exceptions</td><td>2</td><td><span class="pill p-g">3.4%</span></td><td>A service level in business days against a queue worked weekly; both cleared</td></tr>
+<tr><td>4</td><td><strong>CC8.1</strong></td><td><code>CNB-C-082</code></td><td>15 emergency changes</td><td>2</td><td><span class="pill p-a">13.3%</span></td><td>Both reached production through the designed path with a ticket and a rollback plan, and <strong>the control's own second limb caught them</strong></td></tr>
+<tr><td>5</td><td><strong>P4.2</strong></td><td><code>CNB-C-126</code>, <code>CNB-C-127</code></td><td>184 nights of RT-02 in <code>eu-central-1</code></td><td>68</td><td><span class="pill p-r">37.0%</span></td><td><strong>The near-modification.</strong> Confined to one rule in one region, detected inside the period, corrected in four days, independently verified</td></tr>
+<tr><td>6</td><td><strong>CC9.2</strong></td><td><code>CNB-C-092</code></td><td>24 quarterly Tier 1 readings</td><td>2</td><td><span class="pill p-a">8.3%</span></td><td>The control <strong>detected</strong> the lapse both times; what was undefined was escalation on a second consecutive negative reading</td></tr>
+<tr><td>7</td><td><strong>P5.1</strong></td><td><code>CNB-C-129</code></td><td>58 data subject requests</td><td>1</td><td><span class="pill p-g">1.7%</span></td><td>One request exceeded the ten-business-day commitment by two <strong>business</strong> days, delivered complete</td></tr>
+<tr><td>8</td><td><strong>CC6.2</strong></td><td><code>CNB-C-037</code></td><td>40 provisioning requests</td><td>2</td><td><span class="pill p-g">5.0%</span></td><td>The defect is the <strong>sequence</strong> — provisioning preceded recorded approval. No entitlement was granted outside the role model</td></tr>
+<tr><td>9</td><td><strong>CC6.3</strong></td><td><code>CNB-C-040</code></td><td>47 revocations arising</td><td>3</td><td><span class="pill p-a">6.4%</span></td><td><strong>Both certifications were completed on time and evidenced.</strong> The deviation is against the closure gate, not the certification</td></tr>
+</tbody></table>
+</div>
+
+<div class="callout note">
+  <p><strong>Exception 2 carries a dash rather than a rate, and the dash is the finding.</strong> The synthetic probe performed a read, so through seventy-one minutes in which reads succeeded and writes failed, <strong>every word of the control was satisfied</strong> and no burn registered against the error budget. A design deficiency has an <em>event</em>, not a rate — and expressing it as one-in-something would invite a reader to divide it into insignificance.</p>
+  <p><strong>Exception 5's 37.0% is the honest denominator, not the flattering one.</strong> The whole scheduled-deletion population is 8 rules × 3 regions × 184 nights = <strong>4,416 rule-nights</strong>, against which the same sixty-eight nights read as <strong>1.5%</strong>. Both numbers are printed and the report says which one it thinks is honest.</p>
+  <p><strong>Nine of the sixty-one criteria carry the nine exceptions. Fifty-two carry none — and that is not fifty-two successes.</strong> Several are served by controls with a population of one.</p>
+</div>
+
+<h2>Why the opinion was not modified, and how close it was</h2>
+<div class="grid g2">
+  <div class="card">
+    <h3>Pointing toward modification</h3>
+    <table><tbody>
+      <tr><td>Duration</td><td><strong>68 of 184 nights — 37.0% of the period</strong></td></tr>
+      <tr><td>Reach</td><td>A whole region, <code>eu-central-1</code></td></tr>
+      <tr><td>Subject</td><td><strong>The most sensitive category the platform holds</strong></td></tr>
+      <tr><td>Detection</td><td><strong>No control could have detected it</strong> — the job reported success every night</td></tr>
+    </tbody></table>
+  </div>
+  <div class="card">
+    <h3>Pointing away from it</h3>
+    <table><tbody>
+      <tr><td>Scope</td><td>7 of 8 rules ran correctly in all 3 regions throughout</td></tr>
+      <tr><td>Timing</td><td><strong>Detected inside the period</strong>, on 2026-10-23</td></tr>
+      <tr><td>Response</td><td>Corrected within four days and independently verified</td></tr>
+      <tr><td>Outcome</td><td><strong>A new control admitted on its evidence</strong>, mid-window</td></tr>
+    </tbody></table>
+  </div>
+</div>
+<div class="callout">
+  <p><strong>"Clean opinion" is not a term the standards use.</strong> Test exceptions are disclosed in Section IV and do <strong>not</strong> automatically modify an opinion; the practitioner modifies only where the deviations mean the applicable criteria were not achieved. The reasoning is reproduced rather than the conclusion — <strong>a different engagement team on the same facts could have reached the other answer</strong>, and a portfolio that showed the outcome alone would teach a reader that unmodified opinions simply happen.</p>
+</div>
+
+<h2>The risk register — flat for five phases, then nineteen entries at once</h2>
+<div class="card">
+  <h3>36 entries at baseline, 38 at close · High ≥ 15 · Moderate 8–12 · Low ≤ 6</h3>
+  <svg id="chartReg" viewBox="0 0 900 320" role="img" aria-label="Risk register trajectory"></svg>
+  <div class="lg">
+    <span><i class="sw" style="background:var(--red)"></i> High</span>
+    <span><i class="sw" style="background:var(--amber)"></i> Moderate</span>
+    <span><i class="sw" style="background:var(--green)"></i> Low</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+<table>
+<thead><tr><th>Position</th><th>High</th><th>Mod.</th><th>Low</th><th>Total</th><th>What moved</th></tr></thead>
+<tbody>
+<tr><td><strong>Baseline, 2026-04-10</strong></td><td>7</td><td>17</td><td>12</td><td><strong>36</strong></td><td>R-01 to R-36 published with the scoring model</td></tr>
+<tr><td>After R-37, 2026-05-22</td><td>8</td><td>17</td><td>12</td><td>37</td><td>Admitted on penetration test evidence at 4 × 5 = 20</td></tr>
+<tr><td>June review, 2026-06-15</td><td>7</td><td>18</td><td>12</td><td>37</td><td>R-37 alone — on a retest, the only entry ever carried out of High that way</td></tr>
+<tr><td>September review, 2026-09-29</td><td>8</td><td>17</td><td>12</td><td>37</td><td><strong>Six reductions proposed, none accepted.</strong> R-08 raised 12 → 15 on nine occurrences in ninety-two days</td></tr>
+<tr><td>After R-38 and R-24, October</td><td>8</td><td>18</td><td>12</td><td>38</td><td>R-38 admitted at 12; <strong>R-24 re-rated upward</strong> 8 → 12, its described event having occurred</td></tr>
+<tr><td><strong>December review, 2026-12-29</strong></td><td><strong>0</strong></td><td><strong>17</strong></td><td><strong>21</strong></td><td><strong>38</strong></td><td><strong>Nineteen entries moved, seven held</strong> — the first review with a closed window behind it</td></tr>
+<tr><td>March review, 2027-03-09</td><td>0</td><td>17</td><td>21</td><td>38</td><td>Held unchanged. Q4 events have at most three months behind them</td></tr>
+</tbody></table>
+</div>
+
+<div class="callout note">
+  <p><strong>A rating moves on likelihood unless the consequence itself changed, and likelihood 1 is reserved for the not-reasonably-foreseeable.</strong> So an entry at 3 × 4 reaches 2 × 4 = 8 and stops. <strong>Eight is a floor.</strong></p>
+  <p><strong>And a floor is downward only.</strong> R-24 sat on it and then went <em>up</em>, from 8 to 12, when the event it describes occurred. <strong>Nothing closed. Nothing was removed. A risk that stops being likely is re-rated, not deleted.</strong></p>
+</div>
+
+<h2>The forecast against the actual — one entry at the top, five underneath</h2>
+<div class="grid g2">
+  <div class="card">
+    <h3>Band counts — nearly empty as a comparison</h3>
+    <svg id="chartFc" viewBox="0 0 480 260" role="img" aria-label="Forecast against actual by band"></svg>
+    <div class="lg"><span><i class="sw" style="background:var(--muted)"></i> forecast</span><span><i class="sw" style="background:var(--teal)"></i> actual</span></div>
+  </div>
+  <div class="card">
+    <h3>Underneath the bands — five entries crossing</h3>
+    <table><tbody>
+      <tr><td><strong>R-08</strong></td><td>6 Low → <strong>9 Moderate</strong></td><td><span class="pill p-r">worse</span></td></tr>
+      <tr><td><strong>R-09</strong></td><td>6 Low → <strong>12 Moderate</strong></td><td><span class="pill p-r">worse</span></td></tr>
+      <tr><td><strong>R-18</strong></td><td>6 Low → <strong>9 Moderate</strong></td><td><span class="pill p-r">worse</span></td></tr>
+      <tr><td><strong>R-13</strong></td><td>9 Moderate → <strong>6 Low</strong></td><td><span class="pill p-g">better</span></td></tr>
+      <tr><td><strong>R-14</strong></td><td>9 Moderate → <strong>6 Low</strong></td><td><span class="pill p-g">better</span></td></tr>
+    </tbody></table>
+    <p class="small"><strong>Three up, two down, net one.</strong> 16 + 3 − 2 = 17; 22 − 3 + 2 = 21. Eleven of the thirty-eight ratings diverge in all — five crossing a band and six underneath it.</p>
+  </div>
+</div>
+<div class="callout">
+  <p><strong>A forecast right at the band level and wrong five times underneath is not a good forecast that got lucky, and it is not a bad one. It is a forecast whose aggregate absorbed its errors.</strong> The total absorbed four of the five and showed the fifth — and the one it showed is not more important than the four it hid; it is just the one that did not have a partner. <strong>A programme that checked only the aggregate would have declared the forecast a success and learned nothing from the five.</strong></p>
+</div>
+
+<h2>The programme against its eight objectives</h2>
+<div class="card">
+  <h3>Seven met, one missed — and the miss is reported first</h3>
+<table>
+<thead><tr><th>ID</th><th>Target</th><th>Actual</th><th>Verdict</th><th>What the green row cost or concealed</th></tr></thead>
+<tbody>
+<tr><td>OBJ-01</td><td>Unmodified opinion</td><td>Unmodified, 2027-02-26</td><td><span class="pill p-g">Met</span></td><td>The charter said in January this should never have been written as a target — it records what an independent party concluded</td></tr>
+<tr><td>OBJ-02</td><td>Certificate by 2027-01-31</td><td>Issued 2027-01-22</td><td><span class="pill p-g">Met</span></td><td>Nine days of margin that absorbed a major nonconformity — <strong>so it was not margin</strong></td></tr>
+<tr><td><strong>OBJ-03</strong></td><td><strong>≥ 70% of artefacts dual-serving</strong></td><td><strong>16.9% — 356 of 2,103</strong></td><td><span class="pill p-r">Missed</span></td><td><strong>The integration objective. Missed by a factor of four</strong></td></tr>
+<tr><td>OBJ-04</td><td>ML-1 to ML-3 closed by 2026-06-30</td><td>3 of 3 closed and verified</td><td><span class="pill p-g">Met</span></td><td><strong>ML-1's subject matter produced exception 9 and ML-2's produced exception 4</strong>, eighteen months later</td></tr>
+<tr><td>OBJ-05</td><td>Questionnaire turnaround ≤ 3.0 days</td><td>2.6 days across 47</td><td><span class="pill p-g">Met</span></td><td>Measured in the first quarter in which a report existed — <strong>a measure of the arrival</strong></td></tr>
+<tr><td>OBJ-06</td><td>Quarterly review cadence, no lapse</td><td>Five occurrences, no lapse</td><td><span class="pill p-g">Met</span></td><td>It measures that the review <em>happened</em>, not what it did. One moved nineteen entries; one moved none</td></tr>
+<tr><td>OBJ-07</td><td>Spend ≤ $1,400,000</td><td>$1,366,000</td><td><span class="pill p-g">Met</span></td><td>$34,000 of headroom — 2.4%, smaller than the contingency line alone</td></tr>
+<tr><td>OBJ-08</td><td>Training completion ≥ 95%</td><td>96.8% — 181 of 187</td><td><span class="pill p-g">Met</span></td><td><strong>96.8% was the practical ceiling.</strong> The same number would have come back either way</td></tr>
+</tbody></table>
+</div>
+
+<div class="grid g2" style="margin-top:16px">
+  <div class="card">
+    <h3>OBJ-03 against its target, and against the measure it should have used</h3>
+    <svg id="chartObj" viewBox="0 0 480 230" role="img" aria-label="OBJ-03 against target"></svg>
+  </div>
+  <div class="card">
+    <h3>The charter's own success test, scored fourteen months late</h3>
+    <table><tbody>
+      <tr><td>1 · A Type II report exists across all five categories</td><td><span class="pill p-g">Met</span></td></tr>
+      <tr><td>2 · A certificate exists, whole organisation, no open <em>major</em></td><td><span class="pill p-g">Met</span></td></tr>
+      <tr><td>3 · Evidence produced once and used twice at ≥ 70%</td><td><span class="pill p-r">Not met</span></td></tr>
+      <tr><td>4 · Questionnaire turnaround at three days or fewer</td><td><span class="pill p-g">Met</span></td></tr>
+    </tbody></table>
+    <p class="small">A fifth criterion — that the programme's own account of what happened is accurate — was stated as unmeasurable at chartering and <strong>remains so</strong>.</p>
+  </div>
+</div>
+
+<div class="callout">
+  <p><strong>A close-out that reports seven of eight objectives met while leaving the charter's own success test unscored has chosen the flattering instrument.</strong> Both were available on the day; only one was used, and <strong>the choice was not made deliberately, which is worse rather than better</strong> — nobody weighed the two and picked. It went unscored because nothing required it to be scored: <strong>no control in the library asks whether a charter's success criteria have been marked at close.</strong></p>
+  <p>The better measure — <strong>113 of 150 controls dual-serving, 75.3%</strong> — is published beside the miss and <strong>is not substituted for it</strong>, because <em>a programme that changes a measure in the document that scores it has scored itself.</em></p>
+</div>
+
+<h2>The four failures, and what each taught</h2>
+<div class="grid g2">
+  <div class="card"><h3>RT-02 — sixty-eight consecutive nights</h3>
+    <p style="margin:0;font-size:13.5px">A control whose operating condition is that <strong>a record was written</strong>, rather than what the record says. The job ran every night, completed successfully and wrote a completion record every time — against a relation an August migration had emptied. <strong>Success and non-existence produced the same observable state.</strong></p>
+    <p class="small"><strong>A completion record nobody reads is a log, not a control.</strong> The library has still not been enumerated for controls with that shape, and nobody knows how many there are.</p></div>
+  <div class="card"><h3><code>CNB-C-096</code> — the availability probe</h3>
+    <p style="margin:0;font-size:13.5px">A control that says <strong>how often</strong> and never says <strong>what</strong>. It fixed cadence, regions and the paging condition and was silent on what the probe must exercise. The probe performed a read.</p>
+    <p class="small"><strong>Detection worked; measurement did not.</strong> <code>CNB-C-068</code> beside it <em>was</em> explicit about the transactions it exercised — so the silence is a design deficiency rather than an inevitability.</p></div>
+  <div class="card"><h3>The missed restore test</h3>
+    <p style="margin:0;font-size:13.5px">The August occurrence did not happen. It was <strong>not re-performed and back-dated</strong>; the deviation stands at 1 of 6. The temptation to repair a denominator arrived three times in three phases and was refused three times.</p>
+    <p class="small"><strong>A correction that fixes the instances is not a corrective action</strong>, and clause 10.2 distinguishes them in words. <strong>An occurrence is an event on a date.</strong></p></div>
+  <div class="card"><h3>The major nonconformity</h3>
+    <p style="margin:0;font-size:13.5px">The control library got ahead of the practice it described. The audit programme document was written in January; the control describing it was written in June. <strong>Both were correct on their own face and nothing compared them.</strong></p>
+    <p class="small"><strong>Reading the library told nobody anything was wrong.</strong> The issue records the <em>class</em> rather than the instance: it can exist anywhere in 150 rows and has not been enumerated.</p></div>
+</div>
+
+<h2>Four registers, three vocabularies, twenty weeks</h2>
+<div class="card">
+<table>
+<thead><tr><th>Party</th><th>Engagement</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td><strong>Camberwell Risk Partners</strong></td><td>Outsourced clause 9.2 internal audit, 2026-09-14 → 09-25</td><td>2 minor nonconformities · 9 opportunities for improvement — <strong>and the scope gap Stage 2 later raised as major</strong></td></tr>
+<tr><td><strong>Northgate Certification Services</strong></td><td>ISO Stage 1, 2026-10-12 → 10-14</td><td>0 nonconformities · <strong>6 areas of concern, two of which would have become majors at Stage 2</strong> had they not been closed</td></tr>
+<tr><td><strong>Northgate Certification Services</strong></td><td>ISO Stage 2, 2026-11-30 → 12-04</td><td><strong>1 major · 4 minor · 7 opportunities for improvement.</strong> Certificate issued 2027-01-22</td></tr>
+<tr><td><strong>Ironwood Security Labs</strong></td><td>Penetration testing, 2026-05 and again 2026-10 <em>inside the window</em></td><td>May: 16 findings — <strong>1 Critical, a tenant isolation flaw</strong>, remediated and retested clean before the window opened. October: <strong>9 findings — 0 Critical, 1 High, 3 Medium, 5 Low</strong>, the High a signed export URL still valid after the file was re-issued. <strong>Four Lows carry no documented retest at this vantage</strong></td></tr>
+<tr><td><strong>Ashcombe and Doyle LLP</strong></td><td>SOC 2 Type II examination, fieldwork 2027-01-12 → 02-05</td><td><strong>Unmodified opinion, 9 test exceptions</strong>, report issued 2027-02-26</td></tr>
+</tbody></table>
+<p class="small"><strong>None of the four registers is a subset of another and none converts into another.</strong> "Nonconformity" is ISO; "exception" and "deviation" are SOC 2. Four of Northgate's five findings were already in CloudNimbus's own records. <strong>The fifth was not in them as a finding — it was in them as a decision.</strong></p>
+</div>
+
+<h2>The operating record</h2>
+<div class="grid g3">
+  <div class="card kpi warn"><div class="n">71 min</div><div class="l">The Severity-1 of 2026-09-08</div>
+    <div class="d">Failover completed at the data layer in <strong>47 seconds</strong>; the pools held connections to the demoted instance because the health check tested <strong>reachability, not writability</strong>. Reads succeeded, writes failed. <strong>No data loss; the RPO was never engaged.</strong></div></div>
+  <div class="card kpi ok"><div class="n">2h 51m</div><div class="l">DR exercise RTO against a 4-hour objective</div>
+    <div class="d">RPO 4m 12s against 15m. <code>eu-central-1</code> deliberately not failed over — an obligation forbids cross-region recovery and <strong>the residual is accepted rather than engineered away</strong>.</div></div>
+  <div class="card kpi info"><div class="n">99.84%</div><div class="l"><code>us-east-1</code> September, against 99.9%</div>
+    <div class="d">The six window months in <code>us-east-1</code>: 99.98 · 99.97 · <strong>99.84</strong> · 99.96 · 99.95 · 99.94. <code>eu-central-1</code> 100% in all six. <strong>Met for the 41 EU-residency customers and missed for the 599 served from <code>us-east-1</code> in September</strong> — and a mean is not the test.</div></div>
+</div>
+<div class="grid g3" style="margin-top:16px">
+  <div class="card kpi ok"><div class="n">5,171</div><div class="l">Payroll export files in Q3, 0 rejected</div>
+    <div class="d">168 + 302 + 121 + 49 = 640 customers behind them. <strong>Q3 figures</strong>: 92 nightly cycles of the window's 184; 26 reconciliation exceptions, 25 cleared inside the service level. The window population tested was 58.</div></div>
+  <div class="card kpi info"><div class="n">2,103</div><div class="l">Evidence artefacts, one shared store</div>
+    <div class="d">356 of them requested by both parties and produced once. 24 declared evidence classes, <strong>declared before the controls that produce them were built</strong>.</div></div>
+  <div class="card kpi warn"><div class="n">16 · 17 · 5</div><div class="l">Corrective actions · issues · minor NCs open at close</div>
+    <div class="d">The five are Stage 2's four <strong>plus the correction audit's clause 7.4 minor</strong>, recorded separately rather than folded in. <strong>Nothing was closed to make the close-out tidy</strong>, and two of the open issues owe a number nobody has produced.</div></div>
+</div>
+
+<h2>Cost, and where it actually went</h2>
+<div class="card">
+  <h3>$1,366,000 committed against a $1,400,000 envelope · 4.6 FTE · ~14 months</h3>
+  <svg id="chartCost" viewBox="0 0 900 320" role="img" aria-label="Committed spend by line"></svg>
+  <p class="small"><strong>The headroom is $34,000 — 2.4%, smaller than the contingency line alone.</strong> The interesting number is that <strong>internal labour at $612,000 is larger than every external fee combined</strong>. The outsourced ISMS internal audit is also $34,000 — the same figure as the headroom, <strong>by coincidence rather than construction</strong>. <strong>No fine or penalty amount appears anywhere in this repository</strong>; every figure is a cost of assurance.</p>
+</div>
+
+<h2>The nine phases</h2>
+<div class="phases">
+  <a class="ph" href="../01-program-foundation-dual-framework-governance/01.00-README.md"><div class="num">PHASE 01</div><div class="ttl">Program Foundation and Dual-Framework Governance</div><div class="out">The prior clean Type I treated as the best available source of bad news — and the Stage 2 scheduling collision accepted knowingly in January</div></a>
+  <a class="ph" href="../02-system-scope-isms-boundary-and-description/02.00-README.md"><div class="num">PHASE 02</div><div class="ttl">System Scope, ISMS Boundary and the Description</div><div class="out">Two boundaries, neither containing the other · 15 CUECs proposed, 4 refused · 65 days of retention residue disclosed rather than engineered away</div></a>
+  <a class="ph" href="../03-risk-assessment-treatment-and-statement-of-applicability/03.00-README.md"><div class="num">PHASE 03</div><div class="ttl">Risk Assessment, Treatment and the Statement of Applicability</div><div class="out">91 of 93 necessary · four exclusions argued for and refused · no risk avoided, and it says so · no forecast until a harness proved it reachable</div></a>
+  <a class="ph" href="../04-unified-control-framework-and-policy-architecture/04.00-README.md"><div class="num">PHASE 04</div><div class="ttl">Unified Control Framework and Policy Architecture</div><div class="out">Controls designed from risks; the mapping recorded afterwards. A framework mapping is an assertion by the mapper, not an authority</div></a>
+  <a class="ph" href="../05-security-criteria-and-technical-controls/05.00-README.md"><div class="num">PHASE 05</div><div class="ttl">Security Criteria and Technical Controls</div><div class="out">A Critical tenant isolation flaw, and nine months of a twenty-two-month exposure that the log search could not examine</div></a>
+  <a class="ph" href="../06-availability-processing-integrity-and-operations/06.00-README.md"><div class="num">PHASE 06</div><div class="ttl">Availability, Processing Integrity and Operations</div><div class="out">Detection worked and measurement did not · a restore test that simply did not happen · six reductions proposed and none accepted</div></a>
+  <a class="ph" href="../07-confidentiality-privacy-and-third-party-assurance/07.00-README.md"><div class="num">PHASE 07</div><div class="ttl">Confidentiality, Privacy and Third-Party Assurance</div><div class="out">Sixty-eight nights found by an evidence request, not a control · 41 customers notified where nothing required it, over a minuted dissent</div></a>
+  <a class="ph" href="../08-internal-audit-certification-and-type-ii-examination/08.00-README.md"><div class="num">PHASE 08</div><div class="ttl">Internal Audit, Certification and the Type II Examination</div><div class="out">The major that was a decision, not a miss · nine exceptions all self-found · and the opinion deliberately not stated</div></a>
+  <a class="ph" href="../09-executive-reporting-and-continuous-assurance/09.00-README.md"><div class="num">PHASE 09</div><div class="ttl">Executive Reporting and Continuous Assurance</div><div class="out">The phase in which a portfolio congratulates itself, and this one does not</div></a>
+</div>
+
+<h2>What none of this claims</h2>
+<div class="callout note">
+  <p><strong>Not that CloudNimbus is secure.</strong> Neither instrument measures it. One is a conformity assessment of a management system at the <strong>opening</strong> of a three-year cycle; the other is a practitioner's opinion on specified controls <strong>throughout a period that has ended</strong>.</p>
+  <p><strong>Not that a clean report predicts anything.</strong> The evidence is inside the report itself — the retention job addressed an emptied relation for sixty-eight nights, <strong>eleven weeks before the period ended, in the period an unmodified opinion was expressed on</strong>, and nothing in the control library detected it.</p>
+  <p><strong>Not that any of this is a determination of compliance with any law</strong> — not the GDPR, not the CCPA or CPRA, not any state privacy statute.</p>
+</div>
+
+<footer>
+  <p><strong>Illustrative portfolio sample.</strong> CloudNimbus, Inc. and every person, firm, figure and finding in this repository are fictional. <strong>A SOC 2 examination produces an opinion and never a certificate</strong>; the report is a <strong>restricted-use</strong> document intended for management, for user entities during the period, and for other specified parties with sufficient knowledge and understanding. <strong>ISO does not certify anyone</strong> — accredited certification bodies do. <strong>Points of focus are not requirements and Annex A is not the requirements.</strong> No fine or penalty amount is stated anywhere in this repository.</p>
+  <p style="margin-top:10px">← <a href="../README.md" style="color:var(--teal)">Back to the repository README</a> · <a href="DASHBOARD.md" style="color:var(--teal)">Markdown version of this dashboard</a></p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var css = getComputedStyle(document.documentElement);
+  function v(n){ return css.getPropertyValue(n).trim(); }
+  function el(tag, attrs, text){
+    var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  function clear(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
+
+  function C(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+  // ---- Exception rates -------------------------------------------------
+  function drawExc(){
+    var svg = document.getElementById("chartExc"); clear(svg);
+    var data = [
+      {l:"1 A1.2", v:16.7}, {l:"3 PI1.3", v:3.4}, {l:"4 CC8.1", v:13.3},
+      {l:"5 P4.2", v:37.0, hot:true}, {l:"6 CC9.2", v:8.3}, {l:"7 P5.1", v:1.7},
+      {l:"8 CC6.2", v:5.0}, {l:"9 CC6.3", v:6.4}
+    ];
+    var W=900, H=300, L=52, R=18, T=18, B=52;
+    var iw = W-L-R, ih = H-T-B, max = 40;
+    for (var g=0; g<=4; g++){
+      var y = T + ih - (g*10/max)*ih;
+      svg.appendChild(el("line",{x1:L,y1:y,x2:W-R,y2:y,stroke:C("--line"),"stroke-width":1}));
+      svg.appendChild(el("text",{x:L-10,y:y+4,"text-anchor":"end","font-size":11,fill:C("--muted")}, (g*10)+"%"));
+    }
+    var bw = iw/data.length;
+    data.forEach(function(d,i){
+      var h = (d.v/max)*ih, x = L + i*bw + bw*0.18, w = bw*0.64;
+      svg.appendChild(el("rect",{x:x,y:T+ih-h,width:w,height:h,rx:4,
+        fill: d.hot ? C("--red") : C("--teal")}));
+      svg.appendChild(el("text",{x:x+w/2,y:T+ih-h-7,"text-anchor":"middle","font-size":12,
+        "font-weight":700, fill: d.hot ? C("--red") : C("--ink")}, d.v.toFixed(1)+"%"));
+      svg.appendChild(el("text",{x:x+w/2,y:H-B+20,"text-anchor":"middle","font-size":11.5,
+        fill:C("--muted")}, d.l));
+    });
+    svg.appendChild(el("text",{x:L,y:H-10,"font-size":11.5,fill:C("--muted")},
+      "Exception 2 (A1.1, A1.2) is absent: it carries an event, not a rate — and the dash is the finding."));
+  }
+
+  // ---- Register trajectory --------------------------------------------
+  function drawReg(){
+    var svg = document.getElementById("chartReg"); clear(svg);
+    var xs = ["P03","P04","P05","P06","P07","P08","P09"];
+    var series = [
+      {name:"High",     vals:[7,7,7,8,8,0,0],           col:C("--red")},
+      {name:"Moderate", vals:[17,18,18,17,18,17,17],    col:C("--amber")},
+      {name:"Low",      vals:[12,12,12,12,12,21,21],    col:C("--green")}
+    ];
+    var W=900,H=320,L=48,R=20,T=18,B=44;
+    var iw=W-L-R, ih=H-T-B, max=25;
+    for (var g=0; g<=5; g++){
+      var y = T + ih - (g*5/max)*ih;
+      svg.appendChild(el("line",{x1:L,y1:y,x2:W-R,y2:y,stroke:C("--line"),"stroke-width":1}));
+      svg.appendChild(el("text",{x:L-9,y:y+4,"text-anchor":"end","font-size":11,fill:C("--muted")}, g*5));
+    }
+    var step = iw/(xs.length-1);
+    xs.forEach(function(lab,i){
+      svg.appendChild(el("text",{x:L+i*step,y:H-B+22,"text-anchor":"middle","font-size":11.5,
+        fill:C("--muted")}, lab));
+    });
+    series.forEach(function(s){
+      var d = s.vals.map(function(v,i){
+        return (i?"L":"M") + (L+i*step) + " " + (T+ih-(v/max)*ih);
+      }).join(" ");
+      svg.appendChild(el("path",{d:d,fill:"none",stroke:s.col,"stroke-width":2.6,
+        "stroke-linejoin":"round","stroke-linecap":"round"}));
+      s.vals.forEach(function(v,i){
+        svg.appendChild(el("circle",{cx:L+i*step,cy:T+ih-(v/max)*ih,r:4,fill:s.col}));
+      });
+      svg.appendChild(el("text",{x:L+iw+4,y:T+ih-(s.vals[s.vals.length-1]/max)*ih+4,
+        "font-size":11.5,"font-weight":700,fill:s.col}, s.vals[s.vals.length-1]));
+    });
+    // marker for the December review
+    var mx = L + 5*step;
+    svg.appendChild(el("line",{x1:mx,y1:T,x2:mx,y2:T+ih,stroke:C("--muted"),
+      "stroke-width":1,"stroke-dasharray":"4 4"}));
+    svg.appendChild(el("text",{x:mx-8,y:T+13,"text-anchor":"end","font-size":11,
+      fill:C("--muted")}, "Dec 2026 review — 19 entries move"));
+  }
+
+  // ---- Forecast against actual ----------------------------------------
+  function drawFc(){
+    var svg = document.getElementById("chartFc"); clear(svg);
+    var groups = [{l:"High",f:0,a:0},{l:"Moderate",f:16,a:17},{l:"Low",f:22,a:21}];
+    var W=480,H=260,L=40,R=14,T=16,B=46;
+    var iw=W-L-R, ih=H-T-B, max=25;
+    for (var g=0; g<=5; g++){
+      var y = T + ih - (g*5/max)*ih;
+      svg.appendChild(el("line",{x1:L,y1:y,x2:W-R,y2:y,stroke:C("--line"),"stroke-width":1}));
+      svg.appendChild(el("text",{x:L-8,y:y+4,"text-anchor":"end","font-size":10.5,fill:C("--muted")}, g*5));
+    }
+    var gw = iw/groups.length;
+    groups.forEach(function(d,i){
+      var base = L + i*gw, bw = gw*0.28;
+      [[d.f,C("--muted"),0.16],[d.a,C("--teal"),0.52]].forEach(function(p){
+        var h=(p[0]/max)*ih, x=base+gw*p[2];
+        svg.appendChild(el("rect",{x:x,y:T+ih-h,width:bw,height:h,rx:3,fill:p[1]}));
+        svg.appendChild(el("text",{x:x+bw/2,y:T+ih-h-6,"text-anchor":"middle","font-size":11.5,
+          "font-weight":700,fill:p[1]}, p[0]));
+      });
+      svg.appendChild(el("text",{x:base+gw/2,y:H-B+20,"text-anchor":"middle","font-size":11.5,
+        fill:C("--muted")}, d.l));
+    });
+    svg.appendChild(el("text",{x:L,y:H-10,"font-size":11,fill:C("--muted")},
+      "0 · 16 · 22 forecast against 0 · 17 · 21 actual — a difference of one entry."));
+  }
+
+  // ---- OBJ-03 ----------------------------------------------------------
+  function drawObj(){
+    var svg = document.getElementById("chartObj"); clear(svg);
+    var data=[{l:"Target",v:70,c:C("--muted")},
+              {l:"Actual — artefacts",v:16.9,c:C("--red")},
+              {l:"Controls dual-serving",v:75.3,c:C("--teal")}];
+    var W=480,H=230,L=44,R=14,T=16,B=46;
+    var iw=W-L-R, ih=H-T-B, max=100;
+    for (var g=0; g<=4; g++){
+      var y = T + ih - (g*25/max)*ih;
+      svg.appendChild(el("line",{x1:L,y1:y,x2:W-R,y2:y,stroke:C("--line"),"stroke-width":1}));
+      svg.appendChild(el("text",{x:L-8,y:y+4,"text-anchor":"end","font-size":10.5,fill:C("--muted")}, (g*25)+"%"));
+    }
+    var bw=iw/data.length;
+    data.forEach(function(d,i){
+      var h=(d.v/max)*ih, x=L+i*bw+bw*0.2, w=bw*0.6;
+      svg.appendChild(el("rect",{x:x,y:T+ih-h,width:w,height:h,rx:4,fill:d.c}));
+      svg.appendChild(el("text",{x:x+w/2,y:T+ih-h-6,"text-anchor":"middle","font-size":12,
+        "font-weight":700,fill:d.c}, d.v+"%"));
+      svg.appendChild(el("text",{x:x+w/2,y:H-B+20,"text-anchor":"middle","font-size":10.5,
+        fill:C("--muted")}, d.l));
+    });
+    // 70% target line
+    var ty = T + ih - (70/max)*ih;
+    svg.appendChild(el("line",{x1:L,y1:ty,x2:W-R,y2:ty,stroke:C("--amber"),
+      "stroke-width":1.5,"stroke-dasharray":"5 4"}));
+    svg.appendChild(el("text",{x:L,y:H-10,"font-size":11,fill:C("--muted")},
+      "The better measure is published beside the miss and is not substituted for it."));
+  }
+
+  // ---- Cost ------------------------------------------------------------
+  function drawCost(){
+    var svg = document.getElementById("chartCost"); clear(svg);
+    var data=[
+      {l:"Internal labour",v:612},{l:"Security tooling",v:214},{l:"Examination",v:118},
+      {l:"Advisory",v:96},{l:"GRC tooling",v:88},{l:"Pen testing",v:72},
+      {l:"Contingency",v:61.5},{l:"Certification",v:47.5},{l:"Internal audit",v:34},
+      {l:"Training",v:23}];
+    var W=900,H=320,L=132,R=64,T=12,B=32;
+    var iw=W-L-R, ih=H-T-B, max=650;
+    var rh = ih/data.length;
+    data.forEach(function(d,i){
+      var w=(d.v/max)*iw, y=T+i*rh+rh*0.16, h=rh*0.68;
+      svg.appendChild(el("rect",{x:L,y:y,width:w,height:h,rx:3,
+        fill: i===0 ? C("--navy") : C("--teal"), opacity: i===0 ? 1 : 0.82}));
+      svg.appendChild(el("text",{x:L-10,y:y+h/2+4,"text-anchor":"end","font-size":11.5,
+        fill:C("--ink")}, d.l));
+      svg.appendChild(el("text",{x:L+w+8,y:y+h/2+4,"font-size":11.5,"font-weight":700,
+        fill:C("--muted")}, "$"+d.v+"k"));
+    });
+  }
+
+  function drawAll(){ drawExc(); drawReg(); drawFc(); drawObj(); drawCost(); }
+  drawAll();
+
+  var btn = document.getElementById("themeBtn");
+  btn.addEventListener("click", function(){
+    var dark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+    btn.textContent = dark ? "🌗 Dark mode" : "☀️ Light mode";
+    drawAll();
+  });
+})();
+</script>
+</body>
+</html>
